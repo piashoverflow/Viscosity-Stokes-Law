@@ -1,0 +1,6 @@
+{
+  "name": "HSC Physics Lab: Viscosity & Stokes' Law",
+  "description": "Interactive HSC Physics simulation exploring Stokes' Law, fluid viscosity, buoyant force, and terminal velocity with real-time vector analysis and dynamics graphs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
