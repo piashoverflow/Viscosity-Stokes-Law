@@ -223,7 +223,7 @@ export const HorizontalStokesCanvas: React.FC<HorizontalStokesCanvasProps> = ({ 
       const scaleY = tankH / flightMaxMetersY;
 
       const startPxX = marginX + 35;
-      const startPxY = p.hasGravity ? marginY + 50 : marginY + tankH / 2;
+      const startPxY = p.hasGravity ? marginY + 68 : marginY + tankH / 2;
 
       // 1. Fluid Tank Fill
       ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
@@ -248,14 +248,14 @@ export const HorizontalStokesCanvas: React.FC<HorizontalStokesCanvasProps> = ({ 
         ctx.stroke();
       }
 
-      // Tank Title Badge
+      // Tank Title Badge (Positioned at top right to completely prevent any overlap with the ball launcher!)
       ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
-      ctx.fillStyle = '#475569';
-      ctx.textAlign = 'left';
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'right';
       ctx.fillText(
         language === 'bn' ? 'সান্দ্র তরল চেম্বার (Horizontal Flight Medium)' : 'Viscous Liquid Medium Tank',
-        marginX + 12,
-        marginY + 18
+        marginX + tankW - 16,
+        marginY + 20
       );
 
       // 2. Trajectory Ghost Path
@@ -422,40 +422,49 @@ export const HorizontalStokesCanvas: React.FC<HorizontalStokesCanvasProps> = ({ 
           ctx.stroke();
           ctx.fillText('Fb ↑', currentBallPxX + 6, currentBallPxY - 22);
         }
-      } else if (!p.isRunning && b.time === 0) {
-        // Initial rest state preview above the ball (no horizontal arrow collision)
-        ctx.save();
-        ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
-        ctx.fillStyle = '#1d4ed8';
-        ctx.textAlign = 'center';
-        ctx.fillText(`v₀ = ${p.initialSpeed.toFixed(1)} m/s →`, currentBallPxX, currentBallPxY - visualRadius - 10);
-        ctx.restore();
       }
 
-      // 6. Ready State / Stopped State Label (in dedicated non-overlapping badges)
+      // 6. Ready State / Stopped State Label (with clear vibrant colors & zero overlap)
       if (!p.isRunning && b.time === 0) {
         ctx.save();
-        const bannerW = language === 'bn' ? 385 : 360;
-        const bannerH = 34;
-        const bannerX = startPxX + visualRadius + 22;
+        // Mechanical launcher bracket behind sphere
+        ctx.fillStyle = '#475569';
+        ctx.beginPath();
+        ctx.roundRect(marginX, startPxY - visualRadius - 4, 18, (visualRadius + 4) * 2, 3);
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // High-contrast Ready Banner
+        const promptMsg = language === 'bn'
+          ? `▶ প্রক্ষেপণের জন্য প্রস্তুত (v₀ = ${p.initialSpeed.toFixed(1)} m/s) · বাম প্যানেলে "গোলক প্রক্ষেপণ" চাপুন`
+          : `▶ Ready to Launch (v₀ = ${p.initialSpeed.toFixed(1)} m/s) · Click "Launch Sphere" on left panel`;
+
+        ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+        const textWidth = ctx.measureText(promptMsg).width;
+        const bannerW = Math.max(370, textWidth + 30);
+        const bannerH = 36;
+        const bannerX = startPxX + visualRadius + 18;
         const bannerY = startPxY - bannerH / 2;
 
-        ctx.fillStyle = 'rgba(240, 253, 244, 0.95)'; // Soft emerald card
-        ctx.strokeStyle = '#86efac';
-        ctx.lineWidth = 1.5;
+        ctx.fillStyle = 'rgba(240, 253, 244, 0.98)'; // Crisp light emerald
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
         ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 8);
         ctx.fill();
         ctx.stroke();
 
-        ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+        // Pulsing green launch indicator dot
+        ctx.beginPath();
+        ctx.arc(bannerX + 16, bannerY + bannerH / 2, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#16a34a';
+        ctx.fill();
+
         ctx.fillStyle = '#15803d';
         ctx.textAlign = 'left';
-        ctx.fillText(
-          language === 'bn' ? '▶ প্রক্ষেপণের জন্য প্রস্তুত · বাম প্যানেলে "গোলক প্রক্ষেপণ" চাপুন' : '▶ Ready to Launch · Click "Launch Sphere" on left panel',
-          bannerX + 12,
-          bannerY + 21
-        );
+        ctx.fillText(promptMsg, bannerX + 28, bannerY + 22);
         ctx.restore();
       } else if (b.hasStopped) {
         ctx.save();

@@ -84,42 +84,48 @@ export const CylinderCanvas: React.FC<CylinderCanvasProps> = ({
     }
     ctx.restore();
 
-    // 3 Tall Flasks Geometry
+    // 3 Tall Flasks Geometry - Substantial cylinders filling roughly 85% of available space
     const totalTubes = tubes.length; // 3
-    const sideMargin = Math.max(25, width * 0.04);
+    const sideMargin = Math.max(20, width * 0.04);
     const availableW = width - 2 * sideMargin;
     const tubeSpacing = Math.max(16, availableW * 0.04);
-    const tubeWidth = Math.min(180, (availableW - (totalTubes - 1) * tubeSpacing) / totalTubes);
+    const tubeWidth = Math.min(168, (availableW - (totalTubes - 1) * tubeSpacing) / totalTubes);
 
-    const tubeTop = 55;
-    const tubeBottom = height - 45;
+    const tubeTop = 44;
+    const tubeBottom = height - 42;
     const tubeHeight = tubeBottom - tubeTop;
 
-    // Heavy Metal Lab Stand Base across all 3 tubes
+    // Heavy Metal Lab Stand Base across all 3 tubes (centered to cylinders)
+    const standLeft = sideMargin - 12;
+    const standRight = width - sideMargin + 12;
     ctx.save();
     ctx.fillStyle = '#475569';
     ctx.shadowColor = 'rgba(0,0,0,0.18)';
     ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 4;
     ctx.beginPath();
-    ctx.roundRect(sideMargin - 10, tubeBottom + 8, width - 2 * sideMargin + 20, 18, 5);
+    ctx.roundRect(standLeft, tubeBottom + 6, standRight - standLeft, 14, 4);
     ctx.fill();
     ctx.restore();
 
     // Metallic stand bar
     ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(sideMargin - 6, tubeTop - 12, width - 2 * sideMargin + 12, 6);
+    ctx.fillRect(standLeft + 4, tubeTop - 8, (standRight - standLeft) - 8, 4);
+
+    // Deep high-contrast colors for crystal-clear readable titles
+    const deepTitleColors = ['#0369a1', '#15803d', '#c2410c', '#0f766e', '#b91c1c'];
 
     // Render each of the 3 Flasks
     tubes.forEach((tube, idx) => {
       const centerX = sideMargin + idx * (tubeWidth + tubeSpacing) + tubeWidth / 2;
       const leftX = centerX - tubeWidth / 2;
       const rightX = centerX + tubeWidth / 2;
+      const deepColor = deepTitleColors[idx % deepTitleColors.length];
 
       // Stand Clamps for each tube
       ctx.fillStyle = '#64748b';
-      ctx.fillRect(leftX - 6, tubeTop + 25, 6, 12);
-      ctx.fillRect(rightX, tubeTop + 25, 6, 12);
+      ctx.fillRect(leftX - 6, tubeTop + 14, 6, 10);
+      ctx.fillRect(rightX, tubeTop + 14, 6, 10);
 
       // 1. Fluid Body Fill
       ctx.save();
@@ -143,20 +149,45 @@ export const CylinderCanvas: React.FC<CylinderCanvasProps> = ({
       ctx.ellipse(centerX, tubeTop, tubeWidth / 2, 6, 0, 0, Math.PI * 2);
       ctx.fillStyle = tube.fluidRgba.replace(/[\d.]+\)$/, '0.65)');
       ctx.fill();
-      ctx.strokeStyle = tube.lineColor;
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = deepColor;
+      ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      // Flask Header Label
-      ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
-      ctx.fillStyle = tube.lineColor;
-      ctx.textAlign = 'center';
+      // Flask Header Label: Elevated inside a crisp white badge with deep, rich colors
+      ctx.save();
       const flaskTitle = `${language === 'bn' ? 'ফ্লাস্ক' : 'Flask'} ${idx + 1}: ${language === 'bn' ? tube.fluidNameBn : tube.fluidNameEn}`;
-      ctx.fillText(flaskTitle, centerX, tubeTop - 18);
+      const viscText = `η = ${tube.viscosity >= 0.01 ? tube.viscosity.toFixed(3) : tube.viscosity} Pa·s`;
 
-      ctx.font = '10px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText(`η = ${tube.viscosity >= 0.01 ? tube.viscosity.toFixed(3) : tube.viscosity} Pa·s`, centerX, tubeTop - 6);
+      ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+      const titleW = ctx.measureText(flaskTitle).width;
+      const badgeW = Math.max(titleW + 24, tubeWidth * 0.94);
+      const badgeH = 30;
+      const badgeX = centerX - badgeW / 2;
+      const badgeY = 5;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(15, 23, 42, 0.14)';
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetY = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+      ctx.fill();
+
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = deepColor;
+      ctx.lineWidth = 2.0;
+      ctx.stroke();
+
+      // Deep Bold Text for Flask Title
+      ctx.fillStyle = deepColor;
+      ctx.textAlign = 'center';
+      ctx.fillText(flaskTitle, centerX, badgeY + 14);
+
+      // Deep dark slate text for Viscosity (η)
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText(viscText, centerX, badgeY + 26);
+      ctx.restore();
 
       // 3. Height Graduations / Ruler Ticks
       const totalDivisions = 10;
@@ -282,68 +313,138 @@ export const CylinderCanvas: React.FC<CylinderCanvasProps> = ({
       ctx.strokeStyle = '#cbd5e1';
       ctx.stroke();
 
-      // Center pivot dot
+      // Center of Mass (C.O.M.) Indicator on Sphere
+      ctx.save();
       ctx.beginPath();
-      ctx.arc(centerX, sphereVisualY, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
+      ctx.arc(centerX, sphereVisualY, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#facc15'; // Vibrant amber-yellow ring
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(centerX, sphereVisualY, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; // White center dot
       ctx.fill();
       ctx.restore();
 
-      // 8. Free Body Diagram (FBD) Vectors with DEEP High-Contrast Colors
+      // 8. Free Body Diagram (FBD) Vectors with High Visibility & Contrast
       if (showFBD) {
         ctx.save();
-        const maxForceRef = Math.max(tube.state.weight, 0.001);
-        const maxVectorPx = Math.min(65, tubeHeight * 0.22);
-        const forceScale = maxVectorPx / maxForceRef;
+        const maxVectorPx = Math.min(75, tubeHeight * 0.24);
 
-        const lenW = Math.max(14, tube.state.weight * forceScale);
-        const lenFb = Math.max(8, tube.state.buoyancy * forceScale);
-        const lenFv = Math.max(4, tube.state.viscousDrag * forceScale);
+        // 1. Weight (W) - Originates DIRECTLY from Center of Mass (centerX, sphereVisualY) pointing downwards
+        const lenW = Math.max(36, Math.min(maxVectorPx, 32 + (tube.state.weight / 0.003) * 35));
 
-        // Weight (W) - Deep Crimson Red
-        ctx.strokeStyle = '#b91c1c';
-        ctx.fillStyle = '#b91c1c';
-        ctx.lineWidth = 2.5;
+        // 2. Buoyancy (Fb) - Substantially enlarged for high visibility
+        const fbRatio = tube.state.buoyancy / Math.max(0.0001, tube.state.weight);
+        const lenFb = Math.max(26, Math.min(maxVectorPx * 0.75, 20 + fbRatio * 38));
+
+        // 3. Stokes Viscous Drag (Fv) - VIOLET color, dynamically growing with velocity
+        const fvRatio = Math.min(1.0, tube.state.viscousDrag / Math.max(0.0001, tube.state.weight));
+        const lenFv = Math.max(8, Math.min(maxVectorPx * 0.85, 8 + fvRatio * (lenW - 8)));
+
+        // Safe upward clamping so arrows stay below top meniscus
+        const maxUpwardPx = Math.max(10, sphereVisualY - (tubeTop - 2));
+        const safeFb = Math.min(lenFb, maxUpwardPx);
+        const safeFv = Math.min(lenFv, maxUpwardPx);
+
+        // --- A. WEIGHT (W) FROM CENTER OF MASS STRAIGHT DOWN ---
+        // High-contrast white halo
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 5.5;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(centerX - 10, sphereVisualY);
-        ctx.lineTo(centerX - 10, sphereVisualY + lenW);
+        ctx.moveTo(centerX, sphereVisualY);
+        ctx.lineTo(centerX, sphereVisualY + lenW);
         ctx.stroke();
+
+        // Bold Crimson line
+        ctx.strokeStyle = '#dc2626';
+        ctx.fillStyle = '#dc2626';
+        ctx.lineWidth = 3.2;
         ctx.beginPath();
-        ctx.moveTo(centerX - 10, sphereVisualY + lenW + 4);
-        ctx.lineTo(centerX - 14, sphereVisualY + lenW - 4);
-        ctx.lineTo(centerX - 6, sphereVisualY + lenW - 4);
+        ctx.moveTo(centerX, sphereVisualY);
+        ctx.lineTo(centerX, sphereVisualY + lenW);
+        ctx.stroke();
+
+        // Arrowhead down
+        ctx.beginPath();
+        ctx.moveTo(centerX, sphereVisualY + lenW + 6);
+        ctx.lineTo(centerX - 5.5, sphereVisualY + lenW - 3);
+        ctx.lineTo(centerX + 5.5, sphereVisualY + lenW - 3);
         ctx.closePath();
         ctx.fill();
 
-        // Buoyancy (Fb) - Deep Ocean Cyan
+        // W label badge
+        ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fillRect(centerX + 4, sphereVisualY + lenW * 0.45 - 6, 32, 13);
+        ctx.fillStyle = '#b91c1c';
+        ctx.fillText('W=mg', centerX + 6, sphereVisualY + lenW * 0.45 + 4);
+
+        // --- B. BUOYANCY FORCE (Fb) - ENLARGED OCEAN BLUE UPWARD ---
+        const fbX = centerX - 13;
+        // White halo
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 5.5;
+        ctx.beginPath();
+        ctx.moveTo(fbX, sphereVisualY);
+        ctx.lineTo(fbX, sphereVisualY - safeFb);
+        ctx.stroke();
+
+        // Deep Ocean Blue line
         ctx.strokeStyle = '#0284c7';
         ctx.fillStyle = '#0284c7';
-        ctx.lineWidth = 2.2;
+        ctx.lineWidth = 3.2;
         ctx.beginPath();
-        ctx.moveTo(centerX - 10, sphereVisualY);
-        ctx.lineTo(centerX - 10, sphereVisualY - lenFb);
+        ctx.moveTo(fbX, sphereVisualY);
+        ctx.lineTo(fbX, sphereVisualY - safeFb);
         ctx.stroke();
+
+        // Arrowhead up
         ctx.beginPath();
-        ctx.moveTo(centerX - 10, sphereVisualY - lenFb - 4);
-        ctx.lineTo(centerX - 14, sphereVisualY - lenFb + 4);
-        ctx.lineTo(centerX - 6, sphereVisualY - lenFb + 4);
+        ctx.moveTo(fbX, sphereVisualY - safeFb - 6);
+        ctx.lineTo(fbX - 5, sphereVisualY - safeFb + 3);
+        ctx.lineTo(fbX + 5, sphereVisualY - safeFb + 3);
         ctx.closePath();
         ctx.fill();
 
-        // Viscous Drag (Fv) - Deep Golden Amber (Grows dynamically with velocity!)
-        ctx.strokeStyle = '#b45309';
-        ctx.fillStyle = '#b45309';
-        ctx.lineWidth = 2.5;
+        // Fb label badge
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fillRect(fbX - 22, sphereVisualY - safeFb * 0.5 - 6, 18, 13);
+        ctx.fillStyle = '#0369a1';
+        ctx.fillText('Fb ↑', fbX - 20, sphereVisualY - safeFb * 0.5 + 4);
+
+        // --- C. STOKES DRAG (Fv) - VIBRANT VIOLET UPWARD ---
+        const fvX = centerX + 13;
+        // White halo
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 5.5;
         ctx.beginPath();
-        ctx.moveTo(centerX + 10, sphereVisualY);
-        ctx.lineTo(centerX + 10, sphereVisualY - lenFv);
+        ctx.moveTo(fvX, sphereVisualY);
+        ctx.lineTo(fvX, sphereVisualY - safeFv);
         ctx.stroke();
+
+        // Vibrant Violet line
+        ctx.strokeStyle = '#7c3aed';
+        ctx.fillStyle = '#7c3aed';
+        ctx.lineWidth = 3.2;
         ctx.beginPath();
-        ctx.moveTo(centerX + 10, sphereVisualY - lenFv - 4);
-        ctx.lineTo(centerX + 6, sphereVisualY - lenFv + 4);
-        ctx.lineTo(centerX + 14, sphereVisualY - lenFv + 4);
+        ctx.moveTo(fvX, sphereVisualY);
+        ctx.lineTo(fvX, sphereVisualY - safeFv);
+        ctx.stroke();
+
+        // Arrowhead up
+        ctx.beginPath();
+        ctx.moveTo(fvX, sphereVisualY - safeFv - 6);
+        ctx.lineTo(fvX - 5, sphereVisualY - safeFv + 3);
+        ctx.lineTo(fvX + 5, sphereVisualY - safeFv + 3);
         ctx.closePath();
         ctx.fill();
+
+        // Fv label badge
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fillRect(fvX + 5, sphereVisualY - safeFv * 0.5 - 6, 18, 13);
+        ctx.fillStyle = '#6d28d9';
+        ctx.fillText('Fv ↑', fvX + 7, sphereVisualY - safeFv * 0.5 + 4);
 
         ctx.restore();
       }
@@ -371,23 +472,23 @@ export const CylinderCanvas: React.FC<CylinderCanvasProps> = ({
       ctx.font = 'bold 10px "JetBrains Mono", monospace';
       ctx.fillStyle = '#0f172a';
       ctx.textAlign = 'center';
-      ctx.fillText(`v: ${tube.state.velocity.toFixed(3)} m/s`, centerX, tubeBottom + 28);
+      ctx.fillText(`v: ${tube.state.velocity.toFixed(3)} m/s`, centerX, tubeBottom + 21);
       ctx.font = '9px "JetBrains Mono", monospace';
       ctx.fillStyle = '#64748b';
-      ctx.fillText(`vT: ${tube.state.terminalVelocity.toFixed(3)} m/s`, centerX, tubeBottom + 40);
+      ctx.fillText(`vT: ${tube.state.terminalVelocity.toFixed(3)} m/s`, centerX, tubeBottom + 33);
     });
 
     // 10. Reached Bottom State Note
     const allBottom = tubes.every((t) => t.state.hasReachedBottom);
     if (allBottom) {
       ctx.save();
-      ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+      ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
       ctx.fillStyle = '#047857';
       ctx.textAlign = 'center';
       ctx.fillText(
         language === 'bn' ? '✓ সকল গোলক স্তম্ভের নিচে পৌঁছেছে · পুনরায় ড্রপ করুন' : '✓ All spheres reached bottom · Ready to Reset or Drop',
         width / 2,
-        height - 8
+        height - 6
       );
       ctx.restore();
     }
@@ -472,38 +573,41 @@ export const CylinderCanvas: React.FC<CylinderCanvasProps> = ({
         </div>
       </div>
 
-      {/* Center Canvas Area with 3 Tall Cylinders */}
-      <div className="flex-1 relative flex items-center justify-center min-h-[460px] sm:min-h-[520px]">
+      {/* Center Canvas Area with 3 Tall Cylinders (Starts right below toolbar, zero dead space) */}
+      <div className="flex-1 w-full relative flex flex-col items-stretch justify-start min-h-[540px]">
         <canvas
           ref={canvasRef}
-          className="w-full h-full max-h-[640px] rounded-xl bg-gradient-to-b from-sky-50/30 to-white border border-sky-100 shadow-inner"
+          className="w-full flex-1 min-h-[540px] rounded-xl bg-gradient-to-b from-sky-50/40 via-white to-sky-50/20 border border-sky-100 shadow-inner block"
         />
+      </div>
 
-        {/* Dynamic Vector Color Legend (Deep High-Contrast Colors) */}
+      {/* Bottom Bar: Comparison Note & Deep Vector Key Underneath the 3 Flasks */}
+      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-200/80 bg-white/90 backdrop-blur-sm rounded-xl px-3.5 py-2 shadow-2xs">
+        <div className="text-xs text-slate-700 font-semibold flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+          <span>{t.compareNote}</span>
+        </div>
+
+        {/* Deep Vector Key (Now positioned below the 3 flasks) */}
         {showFBD && (
-          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-2.5 shadow-sm text-[11px] space-y-1 pointer-events-none">
-            <div className="font-bold text-slate-800 text-[10px] uppercase tracking-wider border-b border-slate-100 pb-1">
-              Deep Vector Key
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] font-bold">
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">
+              {language === 'bn' ? 'ভেক্টর নির্দেশিকা:' : 'Vector Key:'}
+            </span>
+            <div className="flex items-center gap-1.5 text-red-700 font-bold bg-red-50/90 px-2 py-0.5 rounded border border-red-200">
+              <span className="w-2.5 h-1 bg-red-700 rounded-full" />
+              <span>Weight: W = mg ↓ ({language === 'bn' ? 'ভরকেন্দ্র' : 'C.O.M.'})</span>
             </div>
-            <div className="flex items-center gap-1.5 text-red-700 font-bold">
-              <span className="w-2.5 h-0.5 bg-red-700 rounded-full" />
-              <span>Weight: W = mg ↓</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-sky-700 font-bold">
-              <span className="w-2.5 h-0.5 bg-sky-700 rounded-full" />
+            <div className="flex items-center gap-1.5 text-sky-700 font-bold bg-sky-50/90 px-2 py-0.5 rounded border border-sky-200">
+              <span className="w-2.5 h-1 bg-sky-700 rounded-full" />
               <span>Buoyancy: Fb = σVg ↑</span>
             </div>
-            <div className="flex items-center gap-1.5 text-amber-700 font-bold">
-              <span className="w-2.5 h-0.5 bg-amber-700 rounded-full" />
-              <span>Stokes Drag: Fv = 6πηrv ↑</span>
+            <div className="flex items-center gap-1.5 text-violet-700 font-bold bg-violet-50/90 px-2 py-0.5 rounded border border-violet-200">
+              <span className="w-2.5 h-1 bg-violet-700 rounded-full" />
+              <span>Stokes Drag: Fv = 6πηrv ↑ ({language === 'bn' ? 'বেগুনি' : 'Violet'})</span>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Bottom Comparison Note */}
-      <div className="mt-2 text-center text-xs text-slate-600 font-medium">
-        <span>{t.compareNote}</span>
       </div>
     </div>
   );

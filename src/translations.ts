@@ -83,6 +83,10 @@ export const TRANSLATIONS = {
     formulaCardTitle: "Formula Derivation & Quantitative Substitution",
     terminalFormulaTitle: "Terminal Velocity Equation (v_T)",
     stokesLawTitle: "Stokes' Viscous Drag Formula (F_v)",
+    graphModeRelative: "Relative % (v/vT)",
+    graphModeAbsolute: "Absolute (m/s)",
+    graphFilterAll: "All 3",
+    graphZoomTip: "Normalized % scale prevents high-viscosity curves from flattening at the bottom",
   },
   bn: {
     // Header
@@ -168,5 +172,9 @@ export const TRANSLATIONS = {
     formulaCardTitle: "সূত্রের উপপাদন ও তাৎক্ষণিক গাণিতিক মান",
     terminalFormulaTitle: "প্রান্তীয় বেগের সমীকরণ (Terminal Velocity)",
     stokesLawTitle: "স্টোকসের সান্দ্র বলের সূত্র (Stokes' Drag)",
+    graphModeRelative: "আপেক্ষিক শতাংশ (v/vT %)",
+    graphModeAbsolute: "বাস্তব মান (m/s)",
+    graphFilterAll: "সব ৩টি ফ্লাস্ক",
+    graphZoomTip: "শতাংশ (%) ভিউতে সব সান্দ্রতার তরলের প্রান্তীয় বেগে পৌঁছানোর সময় স্পষ্ট দেখা যায়, নিচে চাপা পড়ে না",
   }
 };
